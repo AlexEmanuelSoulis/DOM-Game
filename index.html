@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="main.js"></script>
+    <script defer src="portal.js"></script>
+    <script defer src="game.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+
+    <div id="screenPortal">
+        <canvas id="uiPortal">welcome</canvas>
+        <form action="" id="playerForm">
+            <input 
+            id="inputUsername" 
+            type="text" 
+            name="name" 
+            placeholder="Choose your username" 
+            minlength="3" 
+            required 
+            autofocus>
+            <button id="">Enter the portal”</button>
+            <div id="formMsg"></div>
+        </form>
+    </div>
+
+    <div id="screenGame" class="hidden">
+        <div id="hud">
+            <span id="hudName"></span>
+            <span id="hudScore"></span>
+            <button id="backBtn"></button>
+        </div>
+    </div>
+</body>
+</html>
