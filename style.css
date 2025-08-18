@@ -1,0 +1,20 @@
+.hidden {
+    display: none;
+  }
+
+  
+  #terminal {
+    width: 1300px;
+    height: 700px;
+    background-color: #000;
+    color: #fff;
+    font-family: monospace;
+    padding: 10px;
+    overflow-y: auto;
+    margin: auto;
+    padding: auto;
+  }
+
+  #inputCommand {
+    
+  }
