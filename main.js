@@ -303,6 +303,7 @@ function handleTerminalCommand(playerName, commandText) {
     if (isUsernameValid && isPasswordValid) {
       alert("Access granted");
       appendTerminalLine("Admin panel unlocked. Welcome!");
+      prompt("Game Completed Congratulations!");
     } else {
       alert("Access denied");
       appendTerminalLine("Invalid credentials.");
