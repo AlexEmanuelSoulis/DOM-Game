@@ -1,36 +1,59 @@
-* {
-    background-color: #000;
-    color: green;
-}
-
-#playerForm {
-    display: flex;
-    justify-content: center;
-    align-self: start;
-    margin: 0 auto;
-    padding: 0 auto;
-}
-
-.hidden {
-    display: none;
+:root{
+    --green-weak: #8bf7a8;
+    --green-strong: #00ff88;
+    --green-dim: #7cff7a;
   }
+  
+  body {
+    background-color:#000 !important; }
+  
+  .text-success-50 {
+     color: var(--green-weak) !important; }
+  .text-success-emphasis {
+     color: var(--green-strong) !important; }
+  
+  .bg-success-subtle {
+     background-color: rgba(0,255,136,0.08) !important; }
+  .border-success {
+     border-color: rgba(0,255,136,0.45) !important; }
+  .border-success-subtle { border-color: rgba(0,255,136,0.25) !important; }
+  
+  .placeholder-green::placeholder {
+     color: rgba(0,255,136,0.6) !important; }
+  
+  .card.bg-dark {
+    background: linear-gradient(180deg,#0b0f0c 0%, #050705 100%);
+  }
+  
+  #screenPortal .card, #screenGame .card {
+    box-shadow: 0 0 0 1px rgba(0,255,136,0.15), 0 15px 40px rgba(0,255,136,0.06);
+  }
+  
+  .font-monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace !important; }
+  
+  /* Terminal area */
+  .terminal-frame{
+    height: 55vh;
+    background:#000;
+    overflow-y:auto;
+    padding: 1rem 1.25rem;
+    box-shadow: inset 0 0 20px rgba(0,255,136,0.07);
+  }
+  
+  .term-line{
+    color: #d7ffe0;
+    margin: 0.15rem 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  /* Blinking cursor effect for the input focus ring vibe */
+  #inputCommand:focus, #inputUsername:focus {
+    box-shadow: 0 0 0 .25rem rgba(0,255,136,.2) !important;
+    outline: none;
+  }
+  
+  /* Hidden helper */
+  .hidden { display:none !important; }
 
   
-  #terminal {
-    width: 1300px;
-    height: 550px;
-    background-color: #000;
-    color: #fff;
-    font-family: monospace;
-    padding: 10px;
-    overflow-y: auto;
-    margin: auto;
-    padding: auto;
-  }
-
-  #inputCommand {
-    background-color: white;
-    width: 1300px;
-    right:200px;
-    margin-left: 70px;
-  }

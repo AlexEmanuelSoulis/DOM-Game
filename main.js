@@ -1,177 +1,325 @@
-const screenPortal = document.querySelector("#screenPortal");
-const screenGame   = document.querySelector("#screenGame");
-const startBtn     = document.querySelector("#start");
-const inputName    = document.querySelector("#inputUsername");
-const hudName      = document.querySelector("#hudName");
-const hudScore     = document.querySelector("#hudScore");
+// === Sélections des éléments ===
+const portalScreenElement = document.getElementById("screenPortal");
+const gameScreenElement = document.querySelector("#screenGame");
+const startButtonElement  = document.querySelector("#start");
+const usernameInputElement = document.querySelector("#inputUsername");
+const hudPlayerNameElement = document.querySelector("#hudName");
+const hudTriesElement = document.querySelector("#hudScore");
+const terminalFormElement = document.querySelector("#terminalInput");
+const terminalInputElement = document.querySelector("#inputCommand");
+const lastOutputLineElement= document.querySelector("#displayInput") ;
+const terminalContainer =document.getElementById("terminal");
+// Crée le conteneur d'historique s'il n'existe pas
+let terminalOutputContainer = terminalContainer.querySelector("#terminalOutput");
+if (!terminalOutputContainer) {
+  terminalOutputContainer = document.createElement("div") ;
+  terminalOutputContainer.id = "terminalOutput";
+  terminalContainer.appendChild(terminalOutputContainer);
+}
+// === État du jeu ===
+let startTriesCount = 0;
+let currentDirectoryName = "root";
+// === Système de fichiers (root) ===
+const fileEnvName = ".env";
+const fileSshName = ".ssh";
+const fileConfigName = "config.json";
+const fileReadmeName = "readme.md";
+const fileNotesName = "notes.txt";
+// === Dossiers (root) ===
+const dirDocumentsName = "documents";
+const dirDesktopName = "desktop";
+const dirConfidentialName = "confidential";
+const dirDownloadsName = "downloads";
+// === /documents ===
+const fileBudgetName = "budget.xlsx";
+const fileReportName = "report.docx";
+const filePresentationName = "presentation.pptx";
+// === /desktop ===
+const fileTodoName = "todo.txt";
+const fileWallpaperName = "wallpaper.png";
+// === /confidential ===
+const fileSecretsName = "secrets.db";
+const filePasswordsName = "passwords.csv" ;
+const fileAdminHintName = "admin.txt"; // corrigé (pas "adminxt")
 
-const termForm     = document.querySelector("#terminalInput");
-const cmdInput     = document.querySelector("#inputCommand");
-const displayLine  = document.querySelector("#displayInput");
+// === /downloads ===
+const fileSetupName = "setup.exe";
+const fileMovieName = "movie.mp4";
+const fileArchiveName = "archive.zip" ;
 
-let tries = 0;
-let currentDir = "root";
+// === Identifiants admin (cachés) ===
+const adminUsernameValue = "#AD1000";
+const adminPasswordValue = "A9!delta";
+// === Répertoires valides ===
+const validDirectoryList = ["root", "documents", "desktop", "confidential", "downloads"];
+// === Utilitaires de terminal ===
+function appendTerminalLine(textToPrint) {
+  const lineElement = document.createElement("div");
+  lineElement.className = "term-line";
+  lineElement.textContent = textToPrint;
+  terminalOutputContainer.appendChild(lineElement);
 
-const envFile = ".env";
-const sshFile = ".ssh";
-const configFile = "config.json";
-const readmeFile = "readme.md";
-const notesFile = "notes.txt";
+  lastOutputLineElement.textContent = textToPrint;
+  terminalOutputContainer.scrollTop = terminalOutputContainer.scrollHeight;
+}
 
-const documentsFolder = "documents/";
-const desktopFolder = "desktop/";
-const confidentialFolder = "confidential/";
-const downloadsFolder = "downloads/";
+function updatePromptForDirectory(directoryName) {
+  terminalInputElement.setAttribute("placeholder", `(${directoryName}) enter command...`);
+  terminalContainer.setAttribute("data-dir", directoryName);
+}
 
-const budgetFile = "budget.xlsx";
-const reportFile = "report.docx";
-const presentationFile = "presentation.pptx";
+//== Démarrage / bascule d’écran ===
+startButtonElement.addEventListener("click", (clickEvent) => {
+  clickEvent.preventDefault();
 
-const todoFile = "todo.txt";
-const wallpaperFile = "wallpaper.png";
+  const typedPlayerName = (usernameInputElement.value || "").trim();
+  if (typedPlayerName.length < 3) {
+    return;
+  }
+hudPlayerNameElement.textContent = `Welcome, ${typedPlayerName}`;
+  startTriesCount += 1;
+  hudTriesElement.textContent = `Number of tries: ${startTriesCount}`;
+        portalScreenElement.classList.add("hidden");
+gameScreenElement.classList.remove("hidden");
 
-const secretsFile = "secrets.db";
-const passwordsFile = "passwords.csv";
-const adminHintFile = "admin.txt";
+  localStorage.setItem("playerName", typedPlayerName);
+  updatePromptForDirectory(currentDirectoryName)
+  terminalInputElement.focus();
+  
+});
+//  Soumission d'une commande 
+terminalFormElement.addEventListener("submit", (submitEvent) => {
+  submitEvent.preventDefault();
+const savedPlayerName = (localStorage.getItem("playerName") || "user").trim();
+  const rawCommandText = terminalInputElement.value.trim();
+  if (!rawCommandText) {
+    return;
+  }
+  appendTerminalLine(`$(${savedPlayerName}): ${rawCommandText}`);
+  handleTerminalCommand(savedPlayerName, rawCommandText);
 
-const setupFile = "setup.exe";
-const movieFile = "movie.mp4";
-const archiveFile = "archive.zip";
-
-const ADMIN_USER = "#AD1000";
-const ADMIN_PASS = "A9!delta";
-
-startBtn.addEventListener("click", (e) => {
-  e.preventDefault();
-  const name = (inputName.value || "").trim();
-  if (name.length < 3) return;
-
-  hudName.textContent = `Welcome, ${name}`;
-  tries += 1;
-  hudScore.textContent = `Number of tries: ${tries}`;
-  screenPortal.classList.add("hidden");
-  screenGame.classList.remove("hidden");
-  localStorage.setItem("playerName", name);
-  cmdInput.focus();
+  terminalInputElement.value  = "";
+  terminalInputElement.focus();
 });
 
-termForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = (localStorage.getItem("playerName") || "user").trim();
-  const cmd = cmdInput.value.trim();
-  if (!cmd) return;
-  handleCommand(name, cmd);
-  cmdInput.value = "";
-  cmdInput.focus();
-});
+// === Routeur de commandes ===
+function handleTerminalCommand(playerName, commandText) {
+  const trimmed = commandText.trim();
+  const startsWithSlash = trimmed.startsWith("/");
+  const normalized = trimmed.toLowerCase();
+  const withoutSlash = startsWithSlash ? normalized.slice(1).trim() : normalized;
 
-function handleCommand(name, cmd) {
-  const normalizedCmd = cmd.toLowerCase();
-
-  if (normalizedCmd === "/help" || normalizedCmd === "help") {
-    displayLine.textContent =
-`Commands:
-  /help            - List available commands
-  /about           - About this game
-  /clear           - Clear the terminal
-  /ls              - List items in current directory
-  /cd <dir|..>     - Change directory (documents, desktop, confidential, downloads, root, ..)
-  /open <file>     - Open a file (e.g. .env, config.json, secrets.db)
-  /admin           - Admin login (requires credentials hidden in files)`;
+  // Commande vide
+  if (withoutSlash.length === 0) {
+    appendTerminalLine("Type /help for commands");
     return;
   }
 
-  if (normalizedCmd === "/about" || normalizedCmd === "about") {
-    displayLine.textContent = "HACK/IN — tiny DOM hacking game. Type /help to begin.";
+  // Commandes de sortie (facultatif)
+  if (withoutSlash ==="exit" || withoutSlash === "quit") {
+    appendTerminalLine("Exiting game...");
+    gameScreenElement.classList.add("hidden");
+    portalScreenElement.classList.remove("hidden");
     return;
   }
 
-  if (normalizedCmd === "/clear" || normalizedCmd === "clear") {
-    displayLine.textContent = "";
+  // HELP
+  if (withoutSlash ==="help") {
+    appendTerminalLine("|--------------------------------");
+    appendTerminalLine("> Commands:");
+    appendTerminalLine(">  /help       - List commands");
+    appendTerminalLine(">  /about      - About game");
+    appendTerminalLine(">  /clear      - Clear terminal");
+    appendTerminalLine(">  /ls         - List directory");
+    appendTerminalLine(">  /cd <dir>   - Change dir");
+    appendTerminalLine(">  /open <f>   - Open file");
+    appendTerminalLine(">  /admin      - Admin login");
+    appendTerminalLine("|--------------------------------");
+    return;
+  }
+  // ABOUT
+  if (withoutSlash === "about") {
+    appendTerminalLine("HACK/IN — tiny DOM hacking game");
     return;
   }
 
-  if (normalizedCmd === "/ls") {
-    if (currentDir === "root") {
-      displayLine.textContent =
-        `Root:\n ${envFile}, ${sshFile}, ${configFile}, ${readmeFile}, ${notesFile}\n` +
-        `Folders: ${documentsFolder}, ${desktopFolder}, ${confidentialFolder}, ${downloadsFolder}`;
+//               CLEAR
+  if (withoutSlash === "clear") {
+    const allLines = terminalOutputContainer.querySelectorAll(".term-line");
+    allLines.forEach((lineElement) => lineElement.remove());
+    lastOutputLineElement.textContent = "";
+    return;
+  }//  /LS
+  if (withoutSlash === "ls") {
+    if (currentDirectoryName === "root") {
+      appendTerminalLine("Root:");
+      appendTerminalLine("  Files: " + [fileEnvName, fileSshName, fileConfigName, fileReadmeName, fileNotesName].join(", "));
+      appendTerminalLine("  Folders: " + [dirDocumentsName, dirDesktopName, dirConfidentialName, dirDownloadsName].map((d) => d + "/").join(" "));
+    } else if (currentDirectoryName === "documents") {
+      appendTerminalLine("Documents: " + [fileBudgetName, fileReportName, filePresentationName].join(", "));
+    } else if (currentDirectoryName === "desktop") {
+
+      appendTerminalLine("Desktop: " + [fileTodoName, fileWallpaperName].join(", "));
+    } else if (currentDirectoryName === "confidential") {
+      appendTerminalLine("Confidential: " + [fileSecretsName, filePasswordsName, fileAdminHintName].join(", "));
+    } else if (currentDirectoryName === "downloads") {
+      appendTerminalLine("Downloads: " + 
+        [fileSetupName, fileMovieName, fileArchiveName].join(", "));
     }
-    if (currentDir === "documents") {
-      displayLine.textContent = `Documents:\n ${budgetFile}, ${reportFile}, ${presentationFile}`;
-    }
-    if (currentDir === "desktop") {
-      displayLine.textContent = `Desktop:\n ${todoFile}, ${wallpaperFile}`;
-    }
-    if (currentDir === "confidential") {
-      displayLine.textContent = `Confidential:\n ${secretsFile}, ${passwordsFile}, ${adminHintFile}`;
-    }
-    if (currentDir === "downloads") {
-      displayLine.textContent = `Downloads:\n ${setupFile}, ${movieFile}, ${archiveFile}`;
-    }
     return;
   }
 
-  if (normalizedCmd.startsWith("/cd ")) {
-    const targetRaw = cmd.slice(4).trim();
-    const target = targetRaw.replace(/\/+$/,'').toLowerCase();
+  //CD
+  if (withoutSlash.startsWith("cd ")) {
+    const targetRaw = trimmed.slice(4).trim();
+    const targetClean = targetRaw.replace(/\/+$/, "").toLowerCase();
 
-    if (target === "root") currentDir = "root";
-    else if (target === "documents") currentDir = "documents";
-    else if (target === "desktop") currentDir = "desktop";
-    else if (target === "confidential") currentDir = "confidential";
-    else if (target === "downloads") currentDir = "downloads";
-    else if (target === "..") currentDir = "root";
-    else displayLine.textContent = `No such directory: ${targetRaw}`;
+    if (targetClean === ".." || targetClean === "root") {
+      currentDirectoryName  = "root";
+      updatePromptForDirectory("root");
+      appendTerminalLine("Moved to root/");
+      return;
+    }
+    if (validDirectoryList.includes(targetClean)) {
+      currentDirectoryName = targetClean;
+      updatePromptForDirectory(targetClean);
+      appendTerminalLine(`Moved to ${targetClean}/`);
+      return;
+    }
+
+    appendTerminalLine("No such directory: " + targetRaw);
     return;
   }
+  // OPEN
+  if (withoutSlash.startsWith("open ")) {
+    const fileRaw = trimmed.slice(6).trim();
 
-  if (normalizedCmd.startsWith("/open ")) {
-    const file = cmd.slice(6).trim();
+    // root
+    if (fileRaw===fileEnvName) {
+      appendTerminalLine("DB_HOST=127.0.0.1");
+      appendTerminalLine("DB_USER=admin");
+      appendTerminalLine("DB_PASSWORD=12345");
+      return;
+    }
+    if (fileRaw=== fileSshName) {
+      appendTerminalLine("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCy...");
+      return;
+    }
+    if (fileRaw=== fileConfigName) {
+      appendTerminalLine("{ server: '127.0.0.1', port: 22 }");
+      return;
+    }
 
-    if (file === envFile) displayLine.textContent = "DB_HOST=127.0.0.1\nDB_USER=admin\nDB_PASSWORD=12345";
-    else if (file === sshFile) displayLine.textContent = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCy...";
-    else if (file === configFile) displayLine.textContent = "{\n  \"server\": \"127.0.0.1\",\n  \"port\": 22\n}";
-    else if (file === readmeFile) displayLine.textContent = "Welcome to the hacking mini-game!";
-    else if (file === notesFile) displayLine.textContent = "TODO: find the hidden password... Check confidential/";
-    else if (file === adminHintFile) displayLine.textContent = "Admin hint: user is '#AD1000'. Try /admin.";
-    else if (file === budgetFile) displayLine.textContent = "Budget 2025: Revenues > Expenses!";
-    else if (file === reportFile) displayLine.textContent = "Q1 Report: profits increased by 12%";
-    else if (file === presentationFile) displayLine.textContent = "Slide 1: Title — Confidential Project";
-    else if (file === todoFile) displayLine.textContent = "- Finish hacking game\n- Buy coffee";
-    else if (file === wallpaperFile) displayLine.textContent = "[IMAGE DATA: wallpaper.png]";
-    else if (file === secretsFile) displayLine.textContent = "credentials.json";
-    else if (file === passwordsFile) displayLine.textContent = "username: #AD1000\npassword: A9!delta";
-    else if (file === setupFile) displayLine.textContent = "[Executable binary content]";
-    else if (file === movieFile) displayLine.textContent = "[Video file: movie.mp4]";
-    else if (file === archiveFile) displayLine.textContent = "Archive contains: [img1.jpg, doc2.pdf]";
-    else displayLine.textContent = `File not found: ${file}`;
+    if (fileRaw === fileReadmeName) {
+      appendTerminalLine("Welcome to hacking mini-game!");
+      return;
+    }
+    if (fileRaw ===fileNotesName) {
+      appendTerminalLine("TODO: find hidden password... Check confidential/");
+      return;
+    }
+
+    // documents
+    if (fileRaw === fileBudgetName) {
+      appendTerminalLine("Budget 2025: Revenues > Expenses!");
+      return;
+    }
+    if (fileRaw === fileReportName) {
+      appendTerminalLine("Q1 Report: profits increased by 12%");
+      return;
+    }
+    if (fileRaw === filePresentationName) {
+      appendTerminalLine("Slide 1: Title — Confidential Project");
+      return;
+    }
+
+    // desktop
+    if (fileRaw === fileTodoName) {
+      appendTerminalLine("- Finish hacking game");
+      appendTerminalLine("- Buy coffee");
+      return;
+    }
+    if (fileRaw === fileWallpaperName) {
+      appendTerminalLine("[IMAGE DATA: wallpaper.png]");
+      return;
+    }
+
+
+
+    // confidential
+    if (fileRaw === fileSecretsName) {
+      appendTerminalLine("credentials.json");
+      return;
+    }
+    if (fileRaw === filePasswordsName) {
+      appendTerminalLine("username: " + adminUsernameValue);
+      appendTerminalLine("password: " + adminPasswordValue);
+      return;
+    }
+    if (fileRaw === fileAdminHintName) {
+      appendTerminalLine("Hint: admin user is '" + adminUsernameValue + "'. Try /admin.");
+      return;
+    }
+
+
+
+    // downloads
+    if (fileRaw === fileSetupName) {
+      appendTerminalLine("[binary content]");
+      return;
+    }
+    if (fileRaw === fileMovieName) {
+      appendTerminalLine("[video file]");
+      return;
+    }
+    if (fileRaw === fileArchiveName) {
+      appendTerminalLine("Archive: img1.jpg, doc2.pdf");
+      return;
+    }
+
+    appendTerminalLine("File not found: " + fileRaw);
     return;
+
+
   }
 
-  if (normalizedCmd === "/admin") {
-    const u = prompt("Admin username:");
-    if (u === null) { displayLine.textContent = "Admin login cancelled."; return; }
-    const p = prompt("Admin password:");
-    if (p === null) { displayLine.textContent = "Admin login cancelled."; return; }
+  // ADMIN
+  if (withoutSlash === "admin") {
+    const typedAdminUsername = prompt("Admin username:");
+    if (typedAdminUsername === null) {
+      appendTerminalLine("Admin login cancelled.");
+      return;
+    }
 
-    if (u.trim() === ADMIN_USER && p === ADMIN_PASS) {
+    const typedAdminPassword = prompt("Admin password:");
+    if (typedAdminPassword === null) {
+      appendTerminalLine("Admin login cancelled.");
+      return;
+    }
+
+    const isUsernameValid = typedAdminUsername.trim() === adminUsernameValue;
+    const isPasswordValid = typedAdminPassword === adminPasswordValue;
+
+    if (isUsernameValid && isPasswordValid) {
       alert("Access granted");
-      displayLine.textContent = "Admin panel unlocked. Welcome!";
+      appendTerminalLine("Admin panel unlocked. Welcome!");
     } else {
       alert("Access denied");
-      displayLine.textContent = "Invalid credentials.";
+      appendTerminalLine("Invalid credentials.");
+      startTriesCount++;
+      alert('Number of tries: ' + startTriesCount);
+      hudTriesElement.textContent = `Number of tries: ${startTriesCount}`;
+      return;
     }
     return;
   }
 
-  displayLine.textContent = `$(${name}): Unknown command "${cmd}"\nType /help`;
-}
+  // Inconnu
+  appendTerminalLine(`$(${playerName}): Unknown command "${commandText}"`);
+  appendTerminalLine("Type /help");
 
 
-function setTimer() {
-  tries += 1;
-  hudScore.textContent = `Number of tries: ${tries}`;
-  setTimeout(setTimer, 60000 * 15);
+  
+
 }
-setTimer();
+
