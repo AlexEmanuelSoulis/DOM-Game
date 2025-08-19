@@ -76,7 +76,7 @@ startButtonElement.addEventListener("click", (clickEvent) => {
   if (typedPlayerName.length < 3) {
     return;
   }
-hudPlayerNameElement.textContent = `Welcome, ${typedPlayerName}`;
+hudPlayerNameElement.textContent = `Welcome: ${typedPlayerName.toUpperCase()} !`;
   startTriesCount += 1;
   hudTriesElement.textContent = `Number of tries: ${startTriesCount}`;
         portalScreenElement.classList.add("hidden");
@@ -95,7 +95,7 @@ const savedPlayerName = (localStorage.getItem("playerName") || "user").trim();
   if (!rawCommandText) {
     return;
   }
-  appendTerminalLine(`$(${savedPlayerName}): ${rawCommandText}`);
+  appendTerminalLine(`$(${savedPlayerName})~: ${rawCommandText}`);
   handleTerminalCommand(savedPlayerName, rawCommandText);
 
   terminalInputElement.value  = "";
@@ -315,7 +315,7 @@ function handleTerminalCommand(playerName, commandText) {
   }
 
   // Inconnu
-  appendTerminalLine(`$(${playerName}): Unknown command "${commandText}"`);
+  appendTerminalLine(`$(${playerName})~: Unknown command "${commandText}"`);
   appendTerminalLine("Type /help");
 
 

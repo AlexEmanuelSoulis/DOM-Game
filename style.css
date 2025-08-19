@@ -49,11 +49,13 @@
   
   /* Blinking cursor effect for the input focus ring vibe */
   #inputCommand:focus, #inputUsername:focus {
-    box-shadow: 0 0 0 .25rem rgba(0,255,136,.2) !important;
+    box-shadow: 0 0 0 .25rem rgba(246, 255, 251, 0.553) !important;
     outline: none;
   }
   
   /* Hidden helper */
   .hidden { display:none !important; }
 
-  
+  #hudName {
+    color:orange;
+  }
