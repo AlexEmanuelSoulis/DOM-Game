@@ -10,48 +10,71 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="main.js"></script>
 </head>
-<body>
+<body class="bg-black text-success">
 
-  <!-- Écran Connexion -->
-  <div id="screenPortal">
-    <br>
-    <form id="playerForm">
-      <input 
-        id="inputUsername" 
-        type="text" 
-        name="name" 
-        placeholder="Choose your username" 
-        minlength="3" 
-        required 
-        autofocus>
-      <button class="bg-danger mx-3" id="start" type="button">Start</button> 
-
-      <div id="formMsg"></div>
-      
-    </form>
-    <br>
-    <p style="text-align: center" > Your Objective, hack into a data center</p>
-
-</div>
-  <!-- Écran Jeu -->
-  <div id="screenGame" class="hidden">
-    <div id="hud">
-        <span id="ipTarget">IP Targer: 127.00.12.12:2000</span>
-        <span style="text-align: end;" id="help">HELP /help</span>
-        <br>
-        <span id="hudName"></span>
-      <span id="hudScore"></span>
-      <br>
+    <div class="container py-5">
+      <!-- Screen: Portal -->
+      <div id="screenPortal" class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+          <div class="card bg-dark border-success shadow-lg">
+            <div class="card-header border-success d-flex justify-content-between align-items-center">
+              <span class="text-success-emphasis fw-bold" id="title"> HACK/IN — Access Gateway</span>
+            </div>
+            <div class="card-body">
+              <p style="text-align: center;" class="mb-4 text-success-50">Objective: breach the datacenter node. Your goal is to login to the Data Center Admin Pannel by finding the Username and Password</p>
+              <form id="playerForm" class="d-flex gap-2">
+                <input 
+                  id="inputUsername" 
+                  type="text" 
+                  name="name" 
+                  class="form-control form-control-lg bg-black text-success border-success font-monospace placeholder-green"
+                  placeholder="Choose your username"
+                  minlength="3"
+                  required
+                  autofocus>
+                <button id="start" type="button" class="btn btn-success btn-lg px-4">Start</button>
+              </form>
+              <div id="formMsg" class="mt-2 small text-danger-emphasis"></div>
+            </div>
+            <div class="card-footer border-success text-center small text-success-50">
+              Tip: type <span class="fw-bold">/help</span> for commands
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Screen: Game -->
+      <div id="screenGame" class="row justify-content-center hidden">
+        <div class="col-12 col-xl-10">
+          <div class="card bg-dark border-success shadow-lg">
+            <div class="card-header border-success d-flex flex-wrap gap-3 align-items-center justify-content-between">
+              <div class="d-flex gap-3 align-items-center">
+                <span id="ipTarget" class="badge bg-success-subtle text-success-emphasis border border-success">IP Target: 127.00.12.12:2000</span>
+                <span class="badge bg-success-subtle text-success-emphasis border border-success">HELP /help</span>
+              </div>
+              <div class="d-flex gap-3">
+                <span id="hudName" class="text-success-emphasis"></span>
+                <span id="hudScore" class="text-success-50"></span>
+              </div>
+            </div>
+  
+            <div class="card-body p-0">
+              <div id="terminal" class="terminal-frame border-top border-bottom border-success">
+                <!-- terminalOutput will be injected here by JS -->
+              </div>
+            </div>
+  
+            <div class="card-footer border-success">
+              <form id="terminalInput" class="d-flex gap-2">
+                <span class="input-group-text bg-black text-success border-success font-monospace">$</span>
+                <input type="text" id="inputCommand" class="form-control bg-black text-success border-success font-monospace placeholder-green" placeholder="Enter command" required>
+              </form>
+              <pre id="displayInput" class="m-0 mt-2 p-2 bg-black text-success font-monospace small border border-success-subtle rounded"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="terminal">
-        
-    </div>
-<!-- Remplace ton conteneur d'affichage par un <pre> -->
-    <pre id="displayInput"></pre>
-    <form action="" id="terminalInput">
-        <input type="text" id="inputCommand" placeholder="Enter command"  required>
-    </form>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
-</body>
-</html>
+  
+  </body>
+</html>  
