@@ -1,3 +1,16 @@
+* {
+    background-color: #000;
+    color: green;
+}
+
+#playerForm {
+    display: flex;
+    justify-content: center;
+    align-self: start;
+    margin: 0 auto;
+    padding: 0 auto;
+}
+
 .hidden {
     display: none;
   }
@@ -5,7 +18,7 @@
   
   #terminal {
     width: 1300px;
-    height: 700px;
+    height: 550px;
     background-color: #000;
     color: #fff;
     font-family: monospace;
@@ -16,5 +29,8 @@
   }
 
   #inputCommand {
-    
+    background-color: white;
+    width: 1300px;
+    right:200px;
+    margin-left: 70px;
   }
